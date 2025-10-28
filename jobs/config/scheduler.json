@@ -1,0 +1,8 @@
+{
+  "name": "brt-gps-collector",
+  "schedule": {
+    "interval": {
+      "minutes": 1
+    }
+  }
+}

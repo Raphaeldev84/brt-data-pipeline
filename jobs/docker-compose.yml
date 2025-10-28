@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  # Banco de dados PostgreSQL para o Prefect Server
+  postgres:
+    image: postgres:13
+    container_name: prefect-postgres
+    environment:
+      POSTGRES_USER: prefect
+      POSTGRES_PASSWORD: prefect
+      POSTGRES_DB: prefect
+    volumes:
+      - prefect-db:/var/lib/postgresql/data
+    networks:
+      - prefect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prefect"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prefect Server
+  prefect-server:
+    image: prefecthq/prefect:1.4.1-python3.8
+    container_name: prefect-server
+    command: prefect server start --host 0.0.0.0 --port 4200
+    environment:
+      PREFECT__SERVER__DATABASE__CONNECTION_URL: postgresql://prefect:prefect@postgres:5432/prefect
+      PREFECT__SERVER__TELEMETRY__ENABLED: "false"
+    ports:
+      - "4200:4200"
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - prefect-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Prefect Agent
+  prefect-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prefect-agent
+    command: prefect agent local start --label docker --api http://prefect-server:4200
+    environment:
+      PREFECT__BACKEND: server
+      PREFECT__SERVER__HOST: http://prefect-server
+      PREFECT__SERVER__PORT: 4200
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/prefect/credentials/gcp-key.json
+    volumes:
+      - ./:/opt/prefect/
+      - ./credentials:/opt/prefect/credentials
+      - ./data:/opt/prefect/data
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+    networks:
+      - prefect-network
+
+networks:
+  prefect-network:
+    driver: bridge
+
+volumes:
+  prefect-db:

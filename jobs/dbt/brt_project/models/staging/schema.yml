@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: brt_gps_data
+    description: >
+      Tabela bronze (camada raw) contendo dados brutos do BRT.
+      Esta é uma tabela externa que referencia diretamente os arquivos CSV no GCS.
+      
+      **Arquitetura Medallion - Camada Bronze:**
+      - Dados exatamente como chegam da fonte (API)
+      - Sem transformações ou limpezas
+      - Serve como fonte única da verdade (single source of truth)
+      - Particionada por data de captura para otimizar consultas
+    
+    columns:
+      - name: id_veiculo
+        description: "Código identificador único do veículo no sistema BRT"
+        tests:
+          - not_null
+      
+      - name: linha
+        description: "Linha ou serviço que o veículo está operando (ex: 10, 30, 50)"
+      
+      - name: latitude
+        description: "Coordenada de latitude da posição atual do veículo em graus decimais (WGS84)"
+        tests:
+          - not_null
+      
+      - name: longitude
+        description: "Coordenada de longitude da posição atual do veículo em graus decimais (WGS84)"
+        tests:
+          - not_null
+      
+      - name: timestamp_gps
+        description: "Data e hora do sinal GPS transmitido pelo veículo"
+        tests:
+          - not_null
+      
+      - name: velocidade
+        description: "Velocidade instantânea do veículo em quilômetros por hora (km/h)"
+      
+      - name: sentido
+        description: "Sentido de operação da linha (ex: ida, volta, circular)"
+      
+      - name: vista
+        description: "Vista ou trajeto específico do veículo dentro da linha"
+      
+      - name: placa
+        description: "Placa de identificação do veículo"
+      
+      - name: direcao
+        description: "Direção de movimento do veículo em graus (0-360), onde 0° = Norte"
+      
+      - name: ignicao
+        description: "Status da ignição do veículo (ligado/desligado)"
+      
+      - name: hodometro
+        description: "Leitura do hodômetro (quilometragem total) do veículo"
+      
+      - name: capacidade_pe
+        description: "Capacidade máxima de passageiros em pé do veículo"
+      
+      - name: capacidade_sentado
+        description: "Capacidade máxima de passageiros sentados do veículo"
+      
+      - name: id_migracao_trajeto
+        description: "Identificador de migração do trajeto (campo legado do sistema)"
+      
+      - name: timestamp_captura
+        description: "Timestamp de quando os dados foram coletados pela pipeline de ingestão"
+        tests:
+          - not_null

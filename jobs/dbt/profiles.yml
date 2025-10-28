@@ -1,0 +1,14 @@
+brt_project:
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('GCP_PROJECT_ID', 'brt-pipeline') }}"
+      dataset: "{{ env_var('GCP_DATASET_ID', 'brt_gps') }}"
+      threads: 4
+      timeout_seconds: 300
+      location: southamerica-east1
+      priority: interactive
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS', './credentials/gcp-key.json') }}"
+      
+  target: dev

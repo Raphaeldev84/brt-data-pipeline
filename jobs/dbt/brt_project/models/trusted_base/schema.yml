@@ -1,0 +1,126 @@
+version: 2
+
+models:
+  - name: fct_brt_gps_data
+    description: >
+      Tabela silver (camada limpa) contendo dados tratados do BRT.
+      
+      **Arquitetura Medallion - Camada Silver:**
+      - Dados limpos e padronizados
+      - Remoção de duplicatas
+      - Validações de qualidade de dados
+      - Campos calculados e enriquecimentos
+      - Particionada por data GPS para performance
+      - Clusterizada por serviço e veículo
+      
+      **Transformações aplicadas:**
+      - Validação de coordenadas geográficas (Rio de Janeiro)
+      - Cálculo de delay entre captura e GPS
+      - Categorização de velocidade
+      - Extração de componentes de data/hora
+      - Identificação de horários de pico
+      - Remoção de duplicatas
+      
+      **Chave Primária:**
+      - Combinação de `id_veiculo` + `timestamp_gps`
+    
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id_veiculo
+            - timestamp_gps
+    
+    columns:
+      - name: id_veiculo
+        description: "Identificador único do veículo (parte da chave primária composta)"
+        tests:
+          - not_null
+      
+      - name: linha
+        description: "Linha de serviço do BRT"
+      
+      - name: placa
+        description: "Placa do veículo"
+      
+      - name: latitude
+        description: "Latitude da posição do veículo"
+        tests:
+          - not_null
+      
+      - name: longitude
+        description: "Longitude da posição do veículo"
+        tests:
+          - not_null
+      
+      - name: velocidade
+        description: "Velocidade do veículo em km/h"
+      
+      - name: direcao
+        description: "Direção do movimento em graus (0-360)"
+      
+      - name: sentido
+        description: "Sentido da linha (ida/volta)"
+      
+      - name: vista
+        description: "Vista/trajeto do veículo"
+      
+      - name: coordenadas_validas
+        description: "Flag indicando se as coordenadas estão dentro dos limites do Rio de Janeiro"
+        tests:
+          - accepted_values:
+              values: [true, false]
+      
+      - name: timestamp_gps
+        description: "Timestamp do sinal GPS (parte da chave primária composta)"
+        tests:
+          - not_null
+      
+      - name: timestamp_captura
+        description: "Timestamp da captura pela pipeline"
+        tests:
+          - not_null
+      
+      - name: delay_segundos
+        description: "Diferença em segundos entre o timestamp de captura e o timestamp GPS"
+      
+      - name: ignicao
+        description: "Status da ignição"
+      
+      - name: hodometro
+        description: "Leitura do hodômetro"
+      
+      - name: capacidade_pe
+        description: "Capacidade de passageiros em pé"
+      
+      - name: capacidade_sentado
+        description: "Capacidade de passageiros sentados"
+      
+      - name: capacidade_total
+        description: "Capacidade total do veículo (em pé + sentado)"
+      
+      - name: id_migracao_trajeto
+        description: "ID de migração do trajeto"
+      
+      - name: categoria_velocidade
+        description: "Categoria da velocidade (parado, lento, moderado, rápido)"
+        tests:
+          - accepted_values:
+              values: ['parado', 'lento', 'moderado', 'rapido', 'desconhecido']
+      
+      - name: data_gps
+        description: "Data extraída do timestamp GPS"
+      
+      - name: hora_gps
+        description: "Hora extraída do timestamp GPS (0-23)"
+      
+      - name: dia_semana
+        description: "Dia da semana (1=Domingo, 7=Sábado)"
+      
+      - name: nome_dia_semana
+        description: "Nome do dia da semana"
+      
+      - name: periodo_dia
+        description: "Período do dia (pico_manha, pico_tarde, fora_pico)"
+        tests:
+          - accepted_values:
+              values: ['pico_manha', 'pico_tarde', 'fora_pico']

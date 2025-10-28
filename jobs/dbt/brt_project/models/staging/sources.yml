@@ -1,0 +1,13 @@
+version: 2
+
+# Sources não usado - a tabela externa é criada diretamente via pre_hook no modelo brt_bronze.sql
+# Arquivo mantido para referência futura
+
+# sources:
+#   - name: gcs_bronze
+#     description: "Dados brutos do BRT vindos do Google Cloud Storage"
+#     tables:
+#       - name: brt_raw_data
+#         description: >
+#           Tabela externa que aponta para os arquivos CSV no GCS.
+#           Contém os dados GPS brutos dos veículos do BRT coletados minuto a minuto.

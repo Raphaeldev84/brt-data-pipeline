@@ -1,0 +1,48 @@
+name: 'brt_project'
+version: '1.0.0'
+config-version: 2
+
+profile: 'brt_project'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  brt_project:
+    # Staging layer - raw data from GCS 
+    staging:
+      +materialized: table
+      +schema: staging
+      +persist_docs:
+        relation: true
+        columns: true
+    
+    # Trusted Base layer - cleaned and standardized
+    trusted_base:
+      +materialized: table
+      +schema: trusted_base
+      +persist_docs:
+        relation: true
+        columns: true
+    
+    # Trusted Processed layer - business aggregations
+    trusted_processed:
+      +materialized: table
+      +schema: trusted_processed
+      +persist_docs:
+        relation: true
+        columns: true
+
+vars:
+  gcp_project: "brt-pipeline"
+  gcs_bucket: "brt-data-pipeline-123"
+  dataset_id: "brt_gps"

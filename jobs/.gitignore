@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+src/__pycache__/
+
+# Environment variables
+.env
+
+# GCP Credentials
+credentials/*.json
+!config/*.json
+
+# DBT 
+dbt/brt_project/target/
+dbt/brt_project/dbt_packages/
+dbt/brt_project/logs/

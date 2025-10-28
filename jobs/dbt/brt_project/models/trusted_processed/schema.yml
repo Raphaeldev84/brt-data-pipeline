@@ -1,0 +1,88 @@
+version: 2
+
+models:
+  - name: fct_brt_gps_metricas_servico
+    description: >
+      Tabela gold (camada de negócio) com métricas agregadas por linha de serviço do BRT.
+      
+      **Arquitetura Medallion - Camada Gold:**
+      - Dados agregados e otimizados para análise de negócio
+      - Métricas calculadas por dia, serviço e período
+      - Performance otimizada para dashboards e relatórios
+      - Particionada por data para consultas eficientes
+      
+      **Casos de uso:**
+      - Monitoramento da frota por linha
+      - Análise de padrões de velocidade
+      - Identificação de gargalos operacionais
+      - Relatórios gerenciais
+      - Dashboards de KPIs
+    
+    columns:
+      - name: data
+        description: "Data de referência das métricas"
+        tests:
+          - not_null
+      
+      - name: linha
+        description: "Linha de serviço do BRT"
+      
+      - name: periodo_dia
+        description: "Período do dia (pico_manha, pico_tarde, fora_pico)"
+      
+      - name: qtd_veiculos
+        description: "Quantidade de veículos distintos operando no período"
+      
+      - name: total_registros
+        description: "Total de sinais GPS capturados no período"
+      
+      - name: velocidade_media
+        description: "Velocidade média da frota em km/h"
+      
+      - name: velocidade_minima
+        description: "Velocidade mínima registrada em km/h"
+      
+      - name: velocidade_maxima
+        description: "Velocidade máxima registrada em km/h"
+      
+      - name: veiculos_parados
+        description: "Quantidade de registros com veículos parados"
+      
+      - name: veiculos_lentos
+        description: "Quantidade de registros com veículos em velocidade lenta (0-20 km/h)"
+      
+      - name: veiculos_moderados
+        description: "Quantidade de registros com veículos em velocidade moderada (20-60 km/h)"
+      
+      - name: veiculos_rapidos
+        description: "Quantidade de registros com veículos em velocidade rápida (>60 km/h)"
+      
+      - name: pct_parados
+        description: "Percentual de registros com veículos parados"
+      
+      - name: pct_lentos
+        description: "Percentual de registros com veículos lentos"
+      
+      - name: pct_moderados
+        description: "Percentual de registros com veículos em velocidade moderada"
+      
+      - name: pct_rapidos
+        description: "Percentual de registros com veículos rápidos"
+      
+      - name: delay_medio_segundos
+        description: "Delay médio entre timestamp GPS e captura em segundos"
+      
+      - name: delay_maximo_segundos
+        description: "Delay máximo registrado em segundos"
+      
+      - name: capacidade_media_frota
+        description: "Capacidade média de passageiros por veículo"
+      
+      - name: capacidade_total_frota
+        description: "Capacidade total da frota operando no período"
+      
+      - name: hodometro_medio
+        description: "Hodômetro médio da frota"
+      
+      - name: ultima_atualizacao
+        description: "Timestamp da última captura de dados do período"
