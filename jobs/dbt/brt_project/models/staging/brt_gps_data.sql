@@ -56,5 +56,5 @@ SELECT
     SAFE_CAST(capacidade_pe AS INT64) as capacidade_pe,
     SAFE_CAST(capacidade_sentado AS INT64) as capacidade_sentado,
     SAFE_CAST(id_migracao_trajeto AS INT64) as id_migracao_trajeto,
-    SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E*S', timestamp_captura) as timestamp_captura
+    SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E*S', timestamp_captura) as etl_update_date
 FROM `{{ target.project }}.{{ schema }}.brt_raw_data_external`

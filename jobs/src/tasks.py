@@ -22,7 +22,6 @@ def download_data():
     try:
         response = requests.get(url, timeout=timeout)
         data = response.json()
-        log("Dados baixados com sucesso")
         return {"data": data, "error": None}
     except Exception as e:
         error_msg = f"Erro ao baixar dados: {e}"
@@ -70,7 +69,6 @@ def parse_data(status: dict, timestamp):
         # Remove duplicatas mantendo o primeiro registro
         df = df.drop_duplicates(subset=['id_veiculo', 'timestamp_gps'], keep='first')
         
-        log(f"Processados {len(df)} veículos")
         return {"data": df, "error": None}
         
     except Exception as e:
@@ -124,13 +122,12 @@ def save_data_to_csv(status: dict):
             if datetime.fromisoformat(item['timestamp']) >= cutoff
         ]
 
-        log(f"Acumuladas {len(ACCUMULATED)} coletas")
-
         # Se temos 10 ou mais coletas, gera DataFrame consolidado e limpa o acumulador
         if len(ACCUMULATED) >= 10:
             df_consolidated = generate_consolidated_dataframe(ACCUMULATED)
             # limpa o acumulador após gerar o DataFrame
             ACCUMULATED.clear()
+            log(f"Consolidadas 10 coletas → {len(df_consolidated['dataframe'])} registros")
             return df_consolidated
 
         return None
@@ -169,8 +166,6 @@ def generate_consolidated_dataframe(accumulated_data):
             start_ts = datetime.fromisoformat(accumulated_data[0]['timestamp'])
         except Exception:
             start_ts = datetime.now()
-
-        log(f"DataFrame consolidado: {len(df)} registros")
         
         return {
             'dataframe': df,
@@ -224,7 +219,7 @@ def upload_to_gcs(data_dict: dict):
         blob = bucket.blob(blob_name)
         blob.upload_from_string(csv_string, content_type='text/csv')
         
-        log(f"Upload concluído: gs://{bucket_name}/{blob_name} ({len(df)} registros)")
+        log(f"Upload GCS: {len(df)} registros → {blob_name}")
         
         return {
             "error": None,
@@ -256,8 +251,6 @@ def run_dbt_models(upload_result: dict):
         dbt_project_dir = os.getenv('DBT_PROJECT_DIR', './dbt/brt_project')
         dbt_profiles_dir = os.getenv('DBT_PROFILES_DIR', './dbt')
         
-        log("Executando DBT...")
-        
         # Executa modelos
         result = subprocess.run(
             ['dbt', 'run', '--project-dir', dbt_project_dir, '--profiles-dir', dbt_profiles_dir],
@@ -267,10 +260,6 @@ def run_dbt_models(upload_result: dict):
         
         # Verifica se houve erro
         if result.returncode != 0:
-            if result.stdout:
-                log(f"DBT stdout: {result.stdout}")
-            if result.stderr:
-                log(f"DBT stderr: {result.stderr}")
             raise subprocess.CalledProcessError(result.returncode, result.args, result.stdout, result.stderr)
         
         log("DBT executado com sucesso")
@@ -290,6 +279,7 @@ def run_dbt_models(upload_result: dict):
         log(error_msg)
         return {"error": error_msg, "executed": False}
 
+
 # ===== FUNCIONALIDADES DO SCHEDULER ===== #
 
 def load_scheduler_config(config_file='config/scheduler.json'):
@@ -308,9 +298,7 @@ def run_scheduled_flow():
     """Executa o flow BRT agendado"""
     try:
         from src.flows import brt_flow
-        log(f"Executando coleta BRT...")
         result = brt_flow()
-        log(f"Coleta concluída")
         return result
     except Exception as e:
         log(f"Erro na execução: {e}")
@@ -324,14 +312,12 @@ def start_scheduler():
     
     interval_seconds = config['schedule']['interval']['minutes'] * 60
     
-    log(f"Iniciando scheduler: {config['name']}")
-    log(f"Intervalo: {config['schedule']['interval']['minutes']} minuto(s)")
-    log("Pressione Ctrl+C para parar o scheduler")
+    log(f"Scheduler iniciado: {config['name']} (intervalo: {config['schedule']['interval']['minutes']} min)")
     
     try:
         while True:
             run_scheduled_flow()
             time.sleep(interval_seconds)
     except KeyboardInterrupt:
-        log("Scheduler parado!")
+        log("Scheduler parado")
         return

@@ -33,8 +33,7 @@ cleaned_data AS (
             ELSE FALSE 
         END AS coordenadas_validas,
         timestamp_gps,
-        timestamp_captura,
-        TIMESTAMP_DIFF(timestamp_captura, timestamp_gps, SECOND) AS delay_segundos,
+        TIMESTAMP_DIFF(etl_update_date, timestamp_gps, SECOND) AS delay_segundos,
         ignicao,
         hodometro,
         capacidade_pe,
@@ -56,7 +55,8 @@ cleaned_data AS (
             WHEN EXTRACT(HOUR FROM timestamp_gps) BETWEEN 6 AND 9 THEN 'pico_manha'
             WHEN EXTRACT(HOUR FROM timestamp_gps) BETWEEN 17 AND 20 THEN 'pico_tarde'
             ELSE 'fora_pico'
-        END AS periodo_dia
+        END AS periodo_dia,
+        etl_update_date
     FROM source_data
     WHERE 
         id_veiculo IS NOT NULL
@@ -71,7 +71,7 @@ deduplicated AS (
         SELECT *,
             ROW_NUMBER() OVER (
                 PARTITION BY id_veiculo, timestamp_gps 
-                ORDER BY timestamp_captura DESC
+                ORDER BY etl_update_date DESC
             ) AS row_num
         FROM cleaned_data
     )

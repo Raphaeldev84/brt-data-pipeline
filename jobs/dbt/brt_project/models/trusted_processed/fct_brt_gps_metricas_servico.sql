@@ -1,6 +1,7 @@
 {{
   config(
-    materialized='table',
+    materialized='incremental',
+    unique_key=['data', 'linha', 'periodo_dia'],
     partition_by={
       "field": "data",
       "data_type": "date",
@@ -34,16 +35,37 @@ agregacao_diaria AS (
         AVG(capacidade_total) AS capacidade_media_frota,
         SUM(capacidade_total) AS capacidade_total_frota,
         ROUND(AVG(hodometro), 2) AS hodometro_medio,
-        MAX(timestamp_captura) AS ultima_atualizacao
+        MAX(etl_update_date) AS etl_update_date
     FROM silver_data
     GROUP BY data_gps, linha, periodo_dia
 )
 
 SELECT 
-    *,
+    data,
+    linha,
+    periodo_dia,
+    qtd_veiculos,
+    total_registros,
+    velocidade_media,
+    velocidade_minima,
+    velocidade_maxima,
+    veiculos_parados,
+    veiculos_lentos,
+    veiculos_moderados,
+    veiculos_rapidos,
+    delay_medio_segundos,
+    delay_maximo_segundos,
+    capacidade_media_frota,
+    capacidade_total_frota,
+    hodometro_medio,
     ROUND(SAFE_DIVIDE(veiculos_parados, total_registros) * 100, 2) AS pct_parados,
     ROUND(SAFE_DIVIDE(veiculos_lentos, total_registros) * 100, 2) AS pct_lentos,
     ROUND(SAFE_DIVIDE(veiculos_moderados, total_registros) * 100, 2) AS pct_moderados,
-    ROUND(SAFE_DIVIDE(veiculos_rapidos, total_registros) * 100, 2) AS pct_rapidos
+    ROUND(SAFE_DIVIDE(veiculos_rapidos, total_registros) * 100, 2) AS pct_rapidos,
+    etl_update_date
 FROM agregacao_diaria
+WHERE 1=1
+{% if is_incremental() %}
+  AND etl_update_date > (SELECT MAX(etl_update_date) FROM {{ this }})
+{% endif %}
 

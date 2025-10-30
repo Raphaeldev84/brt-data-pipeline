@@ -66,7 +66,7 @@ models:
       - name: id_migracao_trajeto
         description: "Identificador de migração do trajeto (campo legado do sistema)"
       
-      - name: timestamp_captura
-        description: "Timestamp de quando os dados foram coletados pela pipeline de ingestão"
+      - name: etl_update_date
+        description: "Data e hora em que o registro foi processado e inserido pela pipeline ELT. Utilizada para controle incremental e rastreabilidade dos dados."
         tests:
           - not_null

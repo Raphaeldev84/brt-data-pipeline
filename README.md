@@ -267,6 +267,8 @@ desafio_civitas/
 
 **Descrição**: Métricas agregadas por serviço e período.
 
+**Materialização**: incremental
+
 **Métricas calculadas**:
 - Total de veículos por serviço
 - Velocidade média, mínima e máxima

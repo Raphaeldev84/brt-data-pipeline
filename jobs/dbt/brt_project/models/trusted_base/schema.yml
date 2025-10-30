@@ -75,11 +75,6 @@ models:
         tests:
           - not_null
       
-      - name: timestamp_captura
-        description: "Timestamp da captura pela pipeline"
-        tests:
-          - not_null
-      
       - name: delay_segundos
         description: "Diferença em segundos entre o timestamp de captura e o timestamp GPS"
       
@@ -124,3 +119,8 @@ models:
         tests:
           - accepted_values:
               values: ['pico_manha', 'pico_tarde', 'fora_pico']
+
+      - name: etl_update_date
+        description: "Data e hora em que o registro foi processado e inserido pela pipeline ELT. Utilizada para controle incremental e rastreabilidade dos dados."
+        tests:
+          - not_null

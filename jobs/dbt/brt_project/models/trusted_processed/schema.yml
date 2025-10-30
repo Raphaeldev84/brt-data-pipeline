@@ -5,6 +5,8 @@ models:
     description: >
       Tabela gold (camada de negócio) com métricas agregadas por linha de serviço do BRT.
       
+      **Materialização:** incremental
+      
       **Arquitetura Medallion - Camada Gold:**
       - Dados agregados e otimizados para análise de negócio
       - Métricas calculadas por dia, serviço e período
@@ -84,5 +86,7 @@ models:
       - name: hodometro_medio
         description: "Hodômetro médio da frota"
       
-      - name: ultima_atualizacao
-        description: "Timestamp da última captura de dados do período"
+      - name: etl_update_date
+        description: "Data e hora em que o registro foi processado e inserido pela pipeline ELT. Utilizada para controle incremental e rastreabilidade dos dados."
+        tests:
+          - not_null
